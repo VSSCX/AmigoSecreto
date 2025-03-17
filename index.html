@@ -1,0 +1,245 @@
+<!DOCTYPE html> 
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Amigo Secreto</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: url('interfaz.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.85); 
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 40px;
+        }
+
+
+        .welcome-screen {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .welcome-screen p {
+            margin-bottom: 20px;
+        }
+
+        .start-button {
+            background-color: #FF9F00;
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .start-button:hover {
+            background-color: #FF7A00;
+        }
+
+        .input-section {
+            display: none;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .input-section input {
+            width: 100%;
+            padding: 15px;
+            front-size: 1.2em;
+            margin: 15px 0;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .input-section button {
+            background-color: #FF9F00;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .input-section button:hover {
+            background-color: #FF7A00;
+        }
+
+        .participants {
+            margin-top: 20px;
+            list-style: none;
+            padding: 0;
+        }
+
+        .participants li {
+            background-color: #e3e3e3;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+	.results-section {
+            display: none;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #reveal-area {
+            font-size: 1.5em;
+            margin: 20px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Amigo Secreto</h1>
+            <p>¡Comparte sorpresas, crea momentos!</p>
+        </div>
+
+        <div id="welcome-screen" class="welcome-screen">
+           
+            <p>¡Estás a punto de comenzar un divertido juego de Amigo Secreto! Registra a tus amigos y prepárate para la sorpresa.</p>
+            <button class="start-button" onclick="startGame()">Vamos a comenzar</button>
+        </div>
+
+      <div id="input-section" class="input-section">
+            <h2>Registra a los participantes</h2>
+            <input type="text" id="participant" placeholder="Nombre del participante">
+            <button onclick="addParticipant()">Añadir</button>
+           
+            <ul id="participants-list" class="participants"></ul>
+            <button id="sort-button" class="sort-button" onclick="sortSecretFriends()" style="display: none;">Sortear</button>
+        </div>
+
+        <div id="results-section" class="results-section">
+            <h2>Resultados del Sorteo</h2>
+            <p>Presiona el botón para ver tu amigo secreto.</p>
+            <button id="show-button" class="show-button" onclick="showNextPair()">Ver Amigo Secreto</button>
+            <div id="reveal-area"></div>
+            <button id="reset-button" class="reset-button" onclick="resetGame()" style="display: none;">Reiniciar Juego</button>
+        </div>
+    </div>
+
+    <script>
+        let participants = [];
+        let assignedPairs = [];
+        let currentIndex = 0;
+
+        function startGame() {
+            document.getElementById("welcome-screen").style.display = 'none';
+            document.getElementById("input-section").style.display = 'block';
+        }
+
+        function addParticipant() {
+            let input = document.getElementById("participant");
+            let name = input.value.trim();
+            
+            if (name && !participants.includes(name)) {
+                participants.push(name);
+                updateParticipantList();
+                input.value = "";
+            }
+            document.getElementById("sort-button").style.display = participants.length >= 2 ? 'block' : 'none';
+        }
+        
+
+        function updateParticipantList() {
+            let list = document.getElementById("participants-list");
+            list.innerHTML = "";
+            participants.forEach(name => {
+                let li = document.createElement("li");
+                li.textContent = name;
+                list.appendChild(li);
+            });
+        }
+ function sortSecretFriends() {
+            if (participants.length < 2) {
+                alert("Debes agregar al menos 2 participantes para sortear.");
+                return;
+            }
+
+            let shuffled = [...participants];
+            let success = false;
+
+
+            while (!success) {
+                shuffled.sort(() => Math.random() - 0.5);
+                success = shuffled.every((name, index) => name !== participants[index]);
+            }
+
+
+            assignedPairs = participants.map((person, index) => ({
+                giver: person,
+                receiver: shuffled[index]
+            }));
+
+            currentIndex = 0;
+            document.getElementById("input-section").style.display = 'none';
+            document.getElementById("results-section").style.display = 'block';
+        }
+
+        function showNextPair() {
+            if (currentIndex < assignedPairs.length) {
+                let pair = assignedPairs[currentIndex];
+                document.getElementById("reveal-area").textContent = `${pair.giver}, tu amigo secreto es: ${pair.receiver}`;
+                currentIndex++;
+            } else {
+                document.getElementById("reveal-area").textContent = "¡Todos han visto su amigo secreto!";
+                document.getElementById("show-button").style.display = 'none';
+                document.getElementById("reset-button").style.display = 'block';
+            }
+        }
+
+        function resetGame() {
+            participants = [];
+            assignedPairs = [];
+            currentIndex = 0;
+
+            document.getElementById("participants-list").innerHTML = "";
+            document.getElementById("reveal-area").textContent = "";
+            document.getElementById("sort-button").style.display = 'none';
+            document.getElementById("show-button").style.display = 'block';
+            document.getElementById("reset-button").style.display = 'none';
+            document.getElementById("results-section").style.display = 'none';
+            document.getElementById("input-section").style.display = 'block';
+        }
+    </script>
+</body>
+</html>
